@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catálogo Online</title>
+  <title>Catálogo Oficial</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #faf4f6; color: #333; padding-bottom: 40px; }
@@ -12,13 +12,57 @@
       background: linear-gradient(135deg, #d63384, #f783ac);
       color: white;
       text-align: center;
-      padding: 30px 15px;
+      padding: 25px 15px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
 
-    header h1 { font-size: 1.8rem; font-weight: 600; letter-spacing: 1px; }
-    header p { font-size: 0.9rem; opacity: 0.9; margin-top: 5px; }
+    .logo-container {
+      margin-bottom: 10px;
+    }
+
+    .logo-img {
+      max-width: 130px;
+      max-height: 130px;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      object-fit: cover;
+      background: white;
+    }
+
+    header h1 { font-size: 1.6rem; font-weight: 600; letter-spacing: 1px; }
+    header p { font-size: 0.9rem; opacity: 0.95; margin-top: 4px; }
+
+    /* BANNER DE FORMAS DE PAGAMENTO NO TOPO */
+    .pagamento-banner {
+      max-width: 1000px;
+      margin: 0 auto 20px auto;
+      padding: 0 15px;
+      text-align: center;
+    }
+
+    .pagamento-card {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(214, 51, 132, 0.08);
+      border: 1px solid #f7e6eb;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .pagamento-card h4 {
+      color: #d63384;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .pagamento-img {
+      max-width: 100%;
+      max-height: 90px;
+      object-fit: contain;
+    }
 
     /* FILTROS DE CATEGORIA */
     .filtros {
@@ -161,9 +205,21 @@
 <body>
 
   <header>
+    <!-- LOGO DA LOJA (Aparecerá se a URL for informada no JS) -->
+    <div id="logoContainer" class="logo-container" style="display: none;">
+      <img id="logoImg" src="" alt="Logo da Loja" class="logo-img">
+    </div>
     <h1>Catálogo Oficial</h1>
     <p>Escolha seus produtos e peça direto no WhatsApp</p>
   </header>
+
+  <!-- BANNER DE FORMAS DE PAGAMENTO -->
+  <div id="pagamentoSection" class="pagamento-banner" style="display: none;">
+    <div class="pagamento-card">
+      <h4>💳 Formas de Pagamento Aceitas</h4>
+      <img id="pagamentoImg" src="" alt="Formas de Pagamento" class="pagamento-img">
+    </div>
+  </div>
 
   <!-- BOTÕES DE FILTRO -->
   <div class="filtros">
@@ -186,6 +242,12 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+    // =========================================================================
+    // 1. COLE AQUI OS LINKS DAS IMAGENS DA LOGO E DO PAGAMENTO DO CLOUDINARY
+    // =========================================================================
+    const URL_LOGO = "";       // Ex: "https://res.cloudinary.com/ddfqhj1b7/image/upload/v12345/sua-logo.png"
+    const URL_PAGAMENTO = "";  // Ex: "https://res.cloudinary.com/ddfqhj1b7/image/upload/v12345/sua-foto-pagamento.png"
+
     const firebaseConfig = {
       apiKey: "AIzaSyAzGjxA_aydcjGqx-umPSmFOrY-8yGA8rw",
       authDomain: "meu-catalogo-wa.firebaseapp.com",
@@ -196,6 +258,18 @@
     };
 
     const SEU_WHATSAPP = "5581991421159";
+
+    // Exibe a Logo caso o link esteja preenchido
+    if (URL_LOGO) {
+      document.getElementById('logoImg').src = URL_LOGO;
+      document.getElementById('logoContainer').style.display = 'block';
+    }
+
+    // Exibe o Banner de Pagamento caso o link esteja preenchido
+    if (URL_PAGAMENTO) {
+      document.getElementById('pagamentoImg').src = URL_PAGAMENTO;
+      document.getElementById('pagamentoSection').style.display = 'block';
+    }
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -253,9 +327,7 @@
       });
     }
 
-    // Função de Filtrar
     window.filtrar = (cat) => {
-      // Atualiza botão ativo
       const botoes = document.querySelectorAll('.btn-filtro');
       botoes.forEach(b => {
         if (b.innerText.includes(cat) || (cat === 'Todos' && b.innerText === 'Todos')) {
@@ -273,7 +345,6 @@
       }
     };
 
-    // Funções do Modal de Zoom
     window.abrirZoom = (url) => {
       document.getElementById('imgExpandida').src = url;
       document.getElementById('modalZoom').style.display = 'flex';
