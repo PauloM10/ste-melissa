@@ -12,11 +12,19 @@
     input, textarea, select, button { width: 100%; padding: 12px; margin-top: 6px; margin-bottom: 14px; border: 1px solid #ebd4da; border-radius: 8px; outline: none; }
     button { background: #d63384; color: white; font-weight: bold; border: none; cursor: pointer; transition: background 0.3s; }
     button:hover { background: #b8216b; }
+    .btn-secondary { background: #6c757d; }
+    .btn-secondary:hover { background: #5a6268; }
+    .btn-warning { background: #ffc107; color: #212529; }
+    .btn-warning:hover { background: #e0a800; }
     .btn-danger { background: #dc3545; }
     .btn-danger:hover { background: #a71d2a; }
     .item-list { display: grid; gap: 10px; }
-    .item-row { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f3e5e8; padding-bottom: 10px; }
+    .item-row { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f3e5e8; padding-bottom: 10px; gap: 10px; }
     .item-row img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; }
+    .item-info { flex-grow: 1; }
+    .actions { display: flex; gap: 6px; }
+    .actions button { width: auto; margin: 0; padding: 6px 12px; font-size: 0.85rem; }
+    .img-preview { font-size: 0.85rem; color: #666; margin-bottom: 10px; display: none; }
   </style>
 </head>
 <body>
@@ -24,8 +32,12 @@
   <h1>Painel de Controle</h1>
 
   <div class="card">
-    <h2>Cadastrar Novo Produto</h2>
+    <h2 id="formTitulo">Cadastrar Novo Produto</h2>
     <form id="prodForm">
+      <!-- Campo oculto para guardar o ID do produto durante a edição -->
+      <input type="hidden" id="prodId">
+      <input type="hidden" id="imagemAtual">
+
       <label>Nome do Produto:</label>
       <input type="text" id="nome" required placeholder="Ex: Maxi Cover Vizzela">
 
@@ -44,9 +56,13 @@
       <textarea id="descricao" rows="3" placeholder="Ex: Base líquida de alta cobertura..."></textarea>
 
       <label>Foto do Produto:</label>
-      <input type="file" id="foto" accept="image/*" required>
+      <div id="previewContainer" class="img-preview">
+        <span>Foto atual mantida. Selecione um arquivo abaixo apenas se desejar trocá-la:</span>
+      </div>
+      <input type="file" id="foto" accept="image/*">
 
       <button type="submit" id="btnSalvar">Salvar Produto</button>
+      <button type="button" id="btnCancelar" class="btn-secondary" style="display: none;" onclick="resetarFormulario()">Cancelar Edição</button>
     </form>
   </div>
 
@@ -57,7 +73,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAzGjxA_aydcjGqx-umPSmFOrY-8yGA8rw",
@@ -74,6 +90,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // Guardar cache dos produtos para facilitar a edição
+    let produtosCache = {};
+
+    // Upload de Foto para Cloudinary
     async function uploadFoto(file) {
       const formData = new FormData();
       formData.append('file', file);
@@ -93,42 +113,63 @@
       return data.secure_url;
     }
 
+    // Evento de Enviar (Cadastrar ou Atualizar)
     document.getElementById('prodForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnSalvar');
-      btn.innerText = "Enviando foto e salvando...";
+      const prodId = document.getElementById('prodId').value;
+      const fileInput = document.getElementById('foto');
+      const imagemAtual = document.getElementById('imagemAtual').value;
+
+      btn.innerText = prodId ? "Atualizando..." : "Enviando foto e salvando...";
       btn.disabled = true;
 
       try {
-        const file = document.getElementById('foto').files[0];
-        if (!file) throw new Error("Selecione uma foto.");
+        let imageUrl = imagemAtual;
 
-        const imageUrl = await uploadFoto(file);
+        // Se selecionou uma nova foto, faz o upload no Cloudinary
+        if (fileInput.files.length > 0) {
+          imageUrl = await uploadFoto(fileInput.files[0]);
+        } else if (!prodId) {
+          // Se for cadastro novo, a foto é obrigatória
+          throw new Error("Selecione uma foto para o novo produto.");
+        }
+
         const precoTexto = document.getElementById('preco').value.replace(',', '.');
         const precoNumero = parseFloat(precoTexto);
 
         if (isNaN(precoNumero)) throw new Error("Por favor, digite um preço válido.");
 
-        await addDoc(collection(db, "produtos"), {
+        const dadosProduto = {
           nome: document.getElementById('nome').value,
           categoria: document.getElementById('categoria').value,
           preco: precoNumero,
           descricao: document.getElementById('descricao').value || "",
           imagem: imageUrl,
           ativo: true
-        });
+        };
 
-        alert("Produto cadastrado com sucesso!");
-        document.getElementById('prodForm').reset();
+        if (prodId) {
+          // ATUALIZAR PRODUTO EXISTENTE
+          await updateDoc(doc(db, "produtos", prodId), dadosProduto);
+          alert("Produto atualizado com sucesso!");
+        } else {
+          // CADASTRAR NOVO PRODUTO
+          await addDoc(collection(db, "produtos"), dadosProduto);
+          alert("Produto cadastrado com sucesso!");
+        }
+
+        resetarFormulario();
         carregarAdmin();
       } catch (err) {
-        alert("Erro no cadastro: " + err.message);
+        alert("Erro: " + err.message);
       } finally {
-        btn.innerText = "Salvar Produto";
+        btn.innerText = prodId ? "Atualizar Produto" : "Salvar Produto";
         btn.disabled = false;
       }
     });
 
+    // Função para carregar e listar produtos
     async function carregarAdmin() {
       const lista = document.getElementById('listaAdmin');
       lista.innerHTML = "Carregando...";
@@ -136,6 +177,7 @@
       try {
         const querySnapshot = await getDocs(collection(db, "produtos"));
         lista.innerHTML = "";
+        produtosCache = {};
 
         if (querySnapshot.empty) {
           lista.innerHTML = "<p>Nenhum produto cadastrado ainda.</p>";
@@ -143,16 +185,22 @@
         }
 
         querySnapshot.forEach((documento) => {
+          const id = documento.id;
           const item = documento.data();
+          produtosCache[id] = item; // Guarda no cache local
+
           const div = document.createElement('div');
           div.className = 'item-row';
           div.innerHTML = `
             <img src="${item.imagem}">
-            <div>
+            <div class="item-info">
               <strong>${item.nome}</strong> <small>(${item.categoria || 'Geral'})</small><br>
               R$ ${Number(item.preco).toFixed(2)}
             </div>
-            <button class="btn-danger" style="width: auto;" onclick="deletar('${documento.id}')">Excluir</button>
+            <div class="actions">
+              <button type="button" class="btn-warning" onclick="prepararEdicao('${id}')">Editar</button>
+              <button type="button" class="btn-danger" onclick="deletar('${id}')">Excluir</button>
+            </div>
           `;
           lista.appendChild(div);
         });
@@ -161,10 +209,48 @@
       }
     }
 
+    // Preenche o formulário com os dados para Edição
+    window.prepararEdicao = (id) => {
+      const item = produtosCache[id];
+      if (!item) return;
+
+      document.getElementById('prodId').value = id;
+      document.getElementById('imagemAtual').value = item.imagem;
+      document.getElementById('nome').value = item.nome;
+      document.getElementById('categoria').value = item.categoria || 'Maquiagem';
+      document.getElementById('preco').value = item.preco;
+      document.getElementById('descricao').value = item.descricao || '';
+      document.getElementById('foto').required = false; // Foto deixa de ser obrigatória na edição
+
+      document.getElementById('formTitulo').innerText = "Editar Produto";
+      document.getElementById('btnSalvar').innerText = "Atualizar Produto";
+      document.getElementById('btnCancelar').style.display = "block";
+      document.getElementById('previewContainer').style.display = "block";
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Reseta o formulário para o modo "Cadastrar Novo"
+    window.resetarFormulario = () => {
+      document.getElementById('prodForm').reset();
+      document.getElementById('prodId').value = "";
+      document.getElementById('imagemAtual').value = "";
+      document.getElementById('foto').required = true;
+
+      document.getElementById('formTitulo').innerText = "Cadastrar Novo Produto";
+      document.getElementById('btnSalvar').innerText = "Salvar Produto";
+      document.getElementById('btnCancelar').style.display = "none";
+      document.getElementById('previewContainer').style.display = "none";
+    };
+
+    // Excluir Produto
     window.deletar = async (id) => {
       if (confirm("Deseja realmente apagar este produto?")) {
         try {
           await deleteDoc(doc(db, "produtos", id));
+          if (document.getElementById('prodId').value === id) {
+            resetarFormulario();
+          }
           carregarAdmin();
         } catch (err) {
           alert("Erro ao excluir: " + err.message);
