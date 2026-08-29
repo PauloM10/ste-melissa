@@ -1,8 +1,56 @@
-<script type="module">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Administrativo - Catálogo</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { max-width: 800px; margin: 0 auto; padding: 20px; background: #f4f4f9; }
+    .form-card, .item-card { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    input, textarea, button { width: 100%; padding: 10px; margin-top: 8px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 4px; }
+    button { background: #007bff; color: white; font-weight: bold; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .btn-danger { background: #dc3545; }
+    .btn-danger:hover { background: #a71d2a; }
+    .item-list { display: grid; gap: 10px; }
+    .item-row { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .item-row img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <h1>Painel de Controle</h1>
+
+  <div class="form-card">
+    <h2>Cadastrar Novo Produto</h2>
+    <form id="prodForm">
+      <label>Nome do Produto:</label>
+      <input type="text" id="nome" required placeholder="Ex: Camisa Oversized">
+
+      <label>Preço (R$):</label>
+      <input type="text" id="preco" required placeholder="Ex: 89.90 ou 89,90">
+
+      <label>Descrição:</label>
+      <textarea id="descricao" rows="3" placeholder="Ex: 100% Algodão..."></textarea>
+
+      <label>Foto do Produto:</label>
+      <input type="file" id="foto" accept="image/*" required>
+
+      <button type="submit" id="btnSalvar">Salvar Produto</button>
+    </form>
+  </div>
+
+  <div class="form-card">
+    <h2>Produtos Cadastrados</h2>
+    <div id="listaAdmin" class="item-list">Carregando...</div>
+  </div>
+
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Seu Firebase configurado
+    // Configuração do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAzGjxA_aydcjGqx-umPSmFOrY-8yGA8rw",
       authDomain: "meu-catalogo-wa.firebaseapp.com",
@@ -12,15 +60,15 @@
       appId: "1:634155499123:web:1c7eb77a88840e40033406"
     };
 
-    // Cole aqui suas informações do Cloudinary
+    // Configuração do Cloudinary
     const CLOUD_NAME = "ddfqhj1b7"; 
     const UPLOAD_PRESET = "catalogo_preset"; 
 
-    // Inicializa o Firebase
+    // Inicialização do Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Função de Upload no Cloudinary
+    // Função ajustada para subir foto no Cloudinary com tratamento estrito de erro
     async function uploadFoto(file) {
       const formData = new FormData();
       formData.append('file', file);
@@ -34,13 +82,15 @@
       const data = await res.json();
 
       if (!res.ok || !data.secure_url) {
-        throw new Error(data.error?.message || "Falha ao enviar imagem para o Cloudinary.");
+        // Lança o erro específico retornado pelo Cloudinary para exibir no alert
+        const mensagemErro = data.error?.message || "Erro desconhecido no envio da imagem.";
+        throw new Error("Cloudinary: " + mensagemErro);
       }
 
       return data.secure_url;
     }
 
-    // Salvar Produto
+    // Ação ao enviar o formulário
     document.getElementById('prodForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnSalvar');
@@ -49,14 +99,29 @@
 
       try {
         const file = document.getElementById('foto').files[0];
-        if (!file) throw new Error("Selecione uma imagem!");
+        if (!file) throw new Error("Selecione uma foto.");
 
+        // 1. Tenta enviar a foto para o Cloudinary
         const imageUrl = await uploadFoto(file);
 
+        // Trava adicional de segurança
+        if (!imageUrl || typeof imageUrl !== 'string') {
+          throw new Error("Não foi possível gerar a URL da imagem.");
+        }
+
+        // 2. Trata o preço
+        const precoTexto = document.getElementById('preco').value.replace(',', '.');
+        const precoNumero = parseFloat(precoTexto);
+
+        if (isNaN(precoNumero)) {
+          throw new Error("Por favor, digite um preço válido.");
+        }
+
+        // 3. Salva no Firebase Cloud Firestore
         await addDoc(collection(db, "produtos"), {
           nome: document.getElementById('nome').value,
-          preco: parseFloat(document.getElementById('preco').value.replace(',', '.')),
-          descricao: document.getElementById('descricao').value,
+          preco: precoNumero,
+          descricao: document.getElementById('descricao').value || "",
           imagem: imageUrl,
           ativo: true
         });
@@ -65,18 +130,18 @@
         document.getElementById('prodForm').reset();
         carregarAdmin();
       } catch (err) {
-        alert("Erro ao cadastrar: " + err.message);
+        alert("Erro no cadastro: " + err.message);
       } finally {
         btn.innerText = "Salvar Produto";
         btn.disabled = false;
       }
     });
 
-    // Listar Produtos no Admin
+    // Função para listar os produtos cadastrados
     async function carregarAdmin() {
       const lista = document.getElementById('listaAdmin');
       lista.innerHTML = "Carregando...";
-      
+
       try {
         const querySnapshot = await getDocs(collection(db, "produtos"));
         lista.innerHTML = "";
@@ -93,18 +158,18 @@
           div.innerHTML = `
             <img src="${item.imagem}" width="50" height="50" style="object-fit:cover; border-radius:4px;">
             <div>
-              <strong>${item.nome}</strong> - R$ ${item.preco.toFixed(2)}
+              <strong>${item.nome}</strong> - R$ ${Number(item.preco).toFixed(2)}
             </div>
             <button class="btn-danger" style="width: auto;" onclick="deletar('${documento.id}')">Excluir</button>
           `;
           lista.appendChild(div);
         });
       } catch (err) {
-        lista.innerHTML = "Erro ao carregar lista: " + err.message;
+        lista.innerHTML = "<p>Erro ao carregar lista: " + err.message + "</p>";
       }
     }
 
-    // Excluir Produto
+    // Função para excluir produto
     window.deletar = async (id) => {
       if (confirm("Deseja realmente apagar este produto?")) {
         try {
@@ -116,5 +181,7 @@
       }
     };
 
-  </script>
     carregarAdmin();
+  </script>
+</body>
+</html>

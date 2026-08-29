@@ -46,6 +46,11 @@
       border-radius: 6px;
       font-weight: bold;
       font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+
+    .btn-wa:hover {
+      background: #1ebc57;
     }
   </style>
 </head>
@@ -67,7 +72,7 @@
       appId: "1:634155499123:web:1c7eb77a88840e40033406"
     };
 
-    const SEU_WHATSAPP = "5581991421159"; // Substitua pelo seu número com DDD (ex: 5581...)
+    const SEU_WHATSAPP = "5581991421159";
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -80,31 +85,37 @@
         container.innerHTML = "";
 
         if (querySnapshot.empty) {
-          container.innerHTML = "<p>Nenhum produto disponível no momento.</p>";
+          container.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>Nenhum produto disponível no momento.</p>";
           return;
         }
 
         querySnapshot.forEach((doc) => {
           const item = doc.data();
-          const precoFormatado = item.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          
+          // Garante a conversão do preço
+          const precoValor = Number(item.preco) || 0;
+          const precoFormatado = precoValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
           
           const textoWa = encodeURIComponent(`Olá! Gostaria de pedir o item: *${item.nome}* (${precoFormatado})`);
           const urlWa = `https://wa.me/${SEU_WHATSAPP}?text=${textoWa}`;
 
           container.innerHTML += `
             <div class="card">
-              <img src="${item.imagem}">
+              <img src="${item.imagem}" alt="${item.nome}">
               <h3>${item.nome}</h3>
               <p>${item.descricao || ''}</p>
               <div class="preco">${precoFormatado}</div>
-              <a href="${urlWa}" target="_blank" class="btn-wa">Pedir no WhatsApp</a>
+              <a href="${urlWa}" target="_blank" rel="noopener noreferrer" class="btn-wa">Pedir no WhatsApp</a>
             </div>
           `;
         });
       } catch (err) {
-        container.innerHTML = "<p>Erro ao carregar o catálogo.</p>";
+        console.error("Erro ao carregar produtos:", err);
+        container.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>Erro ao carregar o catálogo. Tente novamente mais tarde.</p>";
       }
     }
 
     carregarProdutos();
   </script>
+</body>
+</html>
