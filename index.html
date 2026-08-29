@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo Online</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    body { background: #f8f9fa; padding: 15px; }
+    h1 { text-align: center; margin-bottom: 20px; color: #212529; }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 15px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .card h3 { font-size: 1rem; margin: 10px 0 5px; color: #333; }
+    .card p { font-size: 0.85rem; color: #666; flex-grow: 1; margin-bottom: 10px; }
+    .card .preco { font-size: 1.1rem; font-weight: bold; color: #000; margin-bottom: 10px; }
+
+    .btn-wa {
+      background: #25D366;
+      color: white;
+      text-decoration: none;
+      text-align: center;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Nosso Catálogo</h1>
+  <div id="catalogo" class="grid">Carregando produtos...</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzGjxA_aydcjGqx-umPSmFOrY-8yGA8rw",
+      authDomain: "meu-catalogo-wa.firebaseapp.com",
+      projectId: "meu-catalogo-wa",
+      storageBucket: "meu-catalogo-wa.firebasestorage.app",
+      messagingSenderId: "634155499123",
+      appId: "1:634155499123:web:1c7eb77a88840e40033406"
+    };
+
+    const SEU_WHATSAPP = "5581991421159"; // Substitua pelo seu número com DDD (ex: 5581...)
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function carregarProdutos() {
+      const container = document.getElementById('catalogo');
+      
+      try {
+        const querySnapshot = await getDocs(collection(db, "produtos"));
+        container.innerHTML = "";
+
+        if (querySnapshot.empty) {
+          container.innerHTML = "<p>Nenhum produto disponível no momento.</p>";
+          return;
+        }
+
+        querySnapshot.forEach((doc) => {
+          const item = doc.data();
+          const precoFormatado = item.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          
+          const textoWa = encodeURIComponent(`Olá! Gostaria de pedir o item: *${item.nome}* (${precoFormatado})`);
+          const urlWa = `https://wa.me/${SEU_WHATSAPP}?text=${textoWa}`;
+
+          container.innerHTML += `
+            <div class="card">
+              <img src="${item.imagem}">
+              <h3>${item.nome}</h3>
+              <p>${item.descricao || ''}</p>
+              <div class="preco">${precoFormatado}</div>
+              <a href="${urlWa}" target="_blank" class="btn-wa">Pedir no WhatsApp</a>
+            </div>
+          `;
+        });
+      } catch (err) {
+        container.innerHTML = "<p>Erro ao carregar o catálogo.</p>";
+      }
+    }
+
+    carregarProdutos();
+  </script>
