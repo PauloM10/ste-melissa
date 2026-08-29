@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catálogo Oficial</title>
+  <title>Make Mel - Catálogo Oficial</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #faf4f6; color: #333; padding-bottom: 40px; }
@@ -55,13 +55,38 @@
     .pagamento-card h4 {
       color: #d63384;
       font-size: 0.95rem;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    .pagamento-img-wrapper {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      max-width: 100%;
     }
 
     .pagamento-img {
       max-width: 100%;
-      max-height: 90px;
+      max-height: 140px;
       object-fit: contain;
+      border-radius: 8px;
+      transition: transform 0.2s ease;
+    }
+
+    .pagamento-img-wrapper:hover .pagamento-img {
+      transform: scale(1.02);
+    }
+
+    .tag-zoom-banner {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      pointer-events: none;
     }
 
     /* FILTROS DE CATEGORIA */
@@ -186,7 +211,7 @@
 
     .modal-content {
       max-width: 90%;
-      max-height: 80vh;
+      max-height: 85vh;
       border-radius: 10px;
       box-shadow: 0 0 20px rgba(255,255,255,0.2);
     }
@@ -205,19 +230,21 @@
 <body>
 
   <header>
-    <!-- LOGO DA LOJA (Aparecerá se a URL for informada no JS) -->
     <div id="logoContainer" class="logo-container" style="display: none;">
-      <img id="logoImg" src="" alt="Logo da Loja" class="logo-img">
+      <img id="logoImg" src="" alt="Make Mel Logo" class="logo-img">
     </div>
     <h1>Catálogo Oficial</h1>
     <p>Escolha seus produtos e peça direto no WhatsApp</p>
   </header>
 
-  <!-- BANNER DE FORMAS DE PAGAMENTO -->
+  <!-- BANNER DE FORMAS DE PAGAMENTO CLICÁVEL -->
   <div id="pagamentoSection" class="pagamento-banner" style="display: none;">
     <div class="pagamento-card">
       <h4>💳 Formas de Pagamento Aceitas</h4>
-      <img id="pagamentoImg" src="" alt="Formas de Pagamento" class="pagamento-img">
+      <div id="pagamentoWrapper" class="pagamento-img-wrapper">
+        <img id="pagamentoImg" src="" alt="Formas de Pagamento" class="pagamento-img">
+        <span class="tag-zoom-banner">🔍 Clique para ampliar</span>
+      </div>
     </div>
   </div>
 
@@ -242,11 +269,9 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // =========================================================================
-    // 1. COLE AQUI OS LINKS DAS IMAGENS DA LOGO E DO PAGAMENTO DO CLOUDINARY
-    // =========================================================================
-    const URL_LOGO = "https://res.cloudinary.com/ddfqhj1b7/image/upload/v1788024805/logo_lfk3l4.jpg";      
-    const URL_PAGAMENTO = "https://res.cloudinary.com/ddfqhj1b7/image/upload/v1788024814/pagamento_pj92ww.jpg"; 
+    // Insira as URLs copiadas do Cloudinary
+    const URL_LOGO = "COLE_AQUI_O_LINK_DA_LOGO";       
+    const URL_PAGAMENTO = "COLE_AQUI_O_LINK_DO_PAGAMENTO";  
 
     const firebaseConfig = {
       apiKey: "AIzaSyAzGjxA_aydcjGqx-umPSmFOrY-8yGA8rw",
@@ -257,18 +282,19 @@
       appId: "1:634155499123:web:1c7eb77a88840e40033406"
     };
 
-    const SEU_WHATSAPP = "5581991421159";
+    const SEU_WHATSAPP = "5581993940513";
 
-    // Exibe a Logo caso o link esteja preenchido
-    if (URL_LOGO) {
+    // Exibe a Logo
+    if (URL_LOGO && !URL_LOGO.includes("COLE_AQUI")) {
       document.getElementById('logoImg').src = URL_LOGO;
       document.getElementById('logoContainer').style.display = 'block';
     }
 
-    // Exibe o Banner de Pagamento caso o link esteja preenchido
-    if (URL_PAGAMENTO) {
+    // Exibe o Banner de Pagamento com evento de Clique para Zoom
+    if (URL_PAGAMENTO && !URL_PAGAMENTO.includes("COLE_AQUI")) {
       document.getElementById('pagamentoImg').src = URL_PAGAMENTO;
       document.getElementById('pagamentoSection').style.display = 'block';
+      document.getElementById('pagamentoWrapper').onclick = () => abrirZoom(URL_PAGAMENTO);
     }
 
     const app = initializeApp(firebaseConfig);
