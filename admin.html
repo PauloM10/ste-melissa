@@ -25,6 +25,9 @@
     .actions { display: flex; gap: 6px; }
     .actions button { width: auto; margin: 0; padding: 6px 12px; font-size: 0.85rem; }
     .img-preview { font-size: 0.85rem; color: #666; margin-bottom: 10px; display: none; }
+    .tag-status { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; margin-left: 6px; }
+    .tag-ativo { background: #d4edda; color: #155724; }
+    .tag-esgotado { background: #f8d7da; color: #721c24; }
   </style>
 </head>
 <body>
@@ -34,7 +37,6 @@
   <div class="card">
     <h2 id="formTitulo">Cadastrar Novo Produto</h2>
     <form id="prodForm">
-      <!-- Campo oculto para guardar o ID do produto durante a edição -->
       <input type="hidden" id="prodId">
       <input type="hidden" id="imagemAtual">
 
@@ -47,6 +49,12 @@
         <option value="Skincare">Skincare</option>
         <option value="Pincéis">Pincéis & Acessórios</option>
         <option value="Outros">Outros</option>
+      </select>
+
+      <label>Disponibilidade em Estoque:</label>
+      <select id="ativo" required>
+        <option value="true">Disponível (À Venda)</option>
+        <option value="false">Esgotado / Indisponível</option>
       </select>
 
       <label>Preço (R$):</label>
@@ -90,10 +98,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Guardar cache dos produtos para facilitar a edição
     let produtosCache = {};
 
-    // Upload de Foto para Cloudinary
     async function uploadFoto(file) {
       const formData = new FormData();
       formData.append('file', file);
@@ -113,7 +119,6 @@
       return data.secure_url;
     }
 
-    // Evento de Enviar (Cadastrar ou Atualizar)
     document.getElementById('prodForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnSalvar');
@@ -127,11 +132,9 @@
       try {
         let imageUrl = imagemAtual;
 
-        // Se selecionou uma nova foto, faz o upload no Cloudinary
         if (fileInput.files.length > 0) {
           imageUrl = await uploadFoto(fileInput.files[0]);
         } else if (!prodId) {
-          // Se for cadastro novo, a foto é obrigatória
           throw new Error("Selecione uma foto para o novo produto.");
         }
 
@@ -146,15 +149,13 @@
           preco: precoNumero,
           descricao: document.getElementById('descricao').value || "",
           imagem: imageUrl,
-          ativo: true
+          ativo: document.getElementById('ativo').value === "true"
         };
 
         if (prodId) {
-          // ATUALIZAR PRODUTO EXISTENTE
           await updateDoc(doc(db, "produtos", prodId), dadosProduto);
           alert("Produto atualizado com sucesso!");
         } else {
-          // CADASTRAR NOVO PRODUTO
           await addDoc(collection(db, "produtos"), dadosProduto);
           alert("Produto cadastrado com sucesso!");
         }
@@ -169,7 +170,6 @@
       }
     });
 
-    // Função para carregar e listar produtos
     async function carregarAdmin() {
       const lista = document.getElementById('listaAdmin');
       lista.innerHTML = "Carregando...";
@@ -187,14 +187,19 @@
         querySnapshot.forEach((documento) => {
           const id = documento.id;
           const item = documento.data();
-          produtosCache[id] = item; // Guarda no cache local
+          produtosCache[id] = item;
+
+          const isAtivo = item.ativo !== false;
+          const tagStatus = isAtivo 
+            ? `<span class="tag-status tag-ativo">Disponível</span>`
+            : `<span class="tag-status tag-esgotado">Esgotado</span>`;
 
           const div = document.createElement('div');
           div.className = 'item-row';
           div.innerHTML = `
             <img src="${item.imagem}">
             <div class="item-info">
-              <strong>${item.nome}</strong> <small>(${item.categoria || 'Geral'})</small><br>
+              <strong>${item.nome}</strong> <small>(${item.categoria || 'Geral'})</small> ${tagStatus}<br>
               R$ ${Number(item.preco).toFixed(2)}
             </div>
             <div class="actions">
@@ -209,7 +214,6 @@
       }
     }
 
-    // Preenche o formulário com os dados para Edição
     window.prepararEdicao = (id) => {
       const item = produtosCache[id];
       if (!item) return;
@@ -218,9 +222,10 @@
       document.getElementById('imagemAtual').value = item.imagem;
       document.getElementById('nome').value = item.nome;
       document.getElementById('categoria').value = item.categoria || 'Maquiagem';
+      document.getElementById('ativo').value = (item.ativo !== false).toString();
       document.getElementById('preco').value = item.preco;
       document.getElementById('descricao').value = item.descricao || '';
-      document.getElementById('foto').required = false; // Foto deixa de ser obrigatória na edição
+      document.getElementById('foto').required = false;
 
       document.getElementById('formTitulo').innerText = "Editar Produto";
       document.getElementById('btnSalvar').innerText = "Atualizar Produto";
@@ -230,7 +235,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Reseta o formulário para o modo "Cadastrar Novo"
     window.resetarFormulario = () => {
       document.getElementById('prodForm').reset();
       document.getElementById('prodId').value = "";
@@ -243,7 +247,6 @@
       document.getElementById('previewContainer').style.display = "none";
     };
 
-    // Excluir Produto
     window.deletar = async (id) => {
       if (confirm("Deseja realmente apagar este produto?")) {
         try {

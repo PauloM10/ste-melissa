@@ -47,9 +47,27 @@
 
     /* GRID DE PRODUTOS */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; padding: 0 15px; }
-    .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 12px rgba(214, 51, 132, 0.08); display: flex; flex-direction: column; border: 1px solid #f7e6eb; transition: transform 0.2s, box-shadow 0.2s; }
+    .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 12px rgba(214, 51, 132, 0.08); display: flex; flex-direction: column; border: 1px solid #f7e6eb; transition: transform 0.2s, box-shadow 0.2s; position: relative; }
     .card:hover { transform: translateY(-4px); box-shadow: 0 6px 18px rgba(214, 51, 132, 0.15); }
     
+    /* ESTILO PARA PRODUTOS ESGOTADOS */
+    .card.esgotado { opacity: 0.75; }
+    .card.esgotado:hover { transform: none; box-shadow: 0 4px 12px rgba(214, 51, 132, 0.08); }
+
+    .badge-esgotado {
+      position: absolute;
+      top: 25px;
+      left: 25px;
+      background: #dc3545;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 12px;
+      z-index: 10;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
     .img-container { width: 100%; height: 200px; border-radius: 8px; overflow: hidden; position: relative; cursor: pointer; background-color: #fcf8f9; }
     .card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
     .card img:hover { transform: scale(1.05); }
@@ -61,6 +79,8 @@
 
     .btn-add-carrinho { background: #d63384; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .btn-add-carrinho:hover { background: #b8216b; }
+
+    .btn-indisponivel { background: #e0e0e0; color: #777; border: none; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; width: 100%; cursor: not-allowed; text-align: center; }
 
     /* BARRA FLUTUANTE DO CARRINHO (RODAPÉ) */
     .carrinho-bar {
@@ -208,7 +228,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // URLs da Logo e Formas de Pagamento salvas do Cloudinary
     const URL_LOGO = "https://res.cloudinary.com/ddfqhj1b7/image/upload/v1788024805/logo_lfk3l4.jpg";       
     const URL_PAGAMENTO = "https://res.cloudinary.com/ddfqhj1b7/image/upload/v1788024814/pagamento_pj92ww.jpg";  
 
@@ -223,16 +242,13 @@
 
     const SEU_WHATSAPP = "5581991421159";
 
-    // Gerenciador do Carrinho
     let carrinho = [];
 
-    // Exibe a Logo
     if (URL_LOGO) {
       document.getElementById('logoImg').src = URL_LOGO;
       document.getElementById('logoContainer').style.display = 'block';
     }
 
-    // Exibe o Banner de Pagamento
     if (URL_PAGAMENTO) {
       document.getElementById('pagamentoImg').src = URL_PAGAMENTO;
       document.getElementById('pagamentoSection').style.display = 'block';
@@ -276,9 +292,18 @@
       lista.forEach((item) => {
         const precoValor = Number(item.preco) || 0;
         const precoFormatado = precoValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const disponivel = item.ativo !== false;
+
+        const badgeEsgotado = disponivel ? "" : `<div class="badge-esgotado">Esgotado</div>`;
+        const classeEsgotado = disponivel ? "" : "esgotado";
+
+        const botaoAcao = disponivel 
+          ? `<button class="btn-add-carrinho" onclick="adicionarAoCarrinho('${item.id}')">➕ Adicionar à Sacola</button>`
+          : `<button class="btn-indisponivel" disabled>Indisponível no Momento</button>`;
 
         container.innerHTML += `
-          <div class="card">
+          <div class="card ${classeEsgotado}">
+            ${badgeEsgotado}
             <div class="img-container" onclick="abrirZoom('${item.imagem}')">
               <img src="${item.imagem}" alt="${item.nome}">
               <span class="tag-zoom">🔍 Clique para ampliar</span>
@@ -286,18 +311,15 @@
             <h3>${item.nome}</h3>
             <p>${item.descricao || ''}</p>
             <div class="preco">${precoFormatado}</div>
-            <button class="btn-add-carrinho" onclick="adicionarAoCarrinho('${item.id}')">
-              ➕ Adicionar à Sacola
-            </button>
+            ${botaoAcao}
           </div>
         `;
       });
     }
 
-    // FUNÇÕES DO CARRINHO
     window.adicionarAoCarrinho = (id) => {
       const produto = todosProdutos.find(p => p.id === id);
-      if (!produto) return;
+      if (!produto || produto.ativo === false) return;
 
       const itemExistente = carrinho.find(item => item.id === id);
       if (itemExistente) {
@@ -379,11 +401,10 @@
       document.getElementById('modalCarrinho').style.display = 'none';
     };
 
-    // ENVIO FORMATADO PARA O WHATSAPP
     window.enviarPedidoWhatsApp = () => {
       if (carrinho.length === 0) return;
 
-      let mensagem = "✨ *NOVO PEDIDO - MAKE MEL* ✨\n\n";
+      let mensagem = "*NOVO PEDIDO - MAKE MEL*\n\n";
       mensagem += "Olá! Gostaria de encomendar os seguintes itens:\n\n";
 
       let totalGeral = 0;
@@ -399,8 +420,8 @@
       });
 
       const totalGeralFormatado = totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      mensagem += `💰 *VALOR TOTAL: ${totalGeralFormatado}*\n\n`;
-      mensagem += "Por favor, informe a taxa de entrega e as opções de pagamento disponíveis. Obrigado!";
+      mensagem += `*VALOR TOTAL: ${totalGeralFormatado}*\n\n`;
+      mensagem += "Por favor, informe a taxa de entrega. Obrigado!";
 
       const urlWa = `https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(mensagem)}`;
       window.open(urlWa, '_blank');
