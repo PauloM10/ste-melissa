@@ -6,7 +6,7 @@
   <title>Make Mel - Catálogo Oficial</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #faf4f6; color: #333; padding-bottom: 40px; }
+    body { background-color: #faf4f6; color: #333; padding-bottom: 90px; }
     
     header {
       background: linear-gradient(135deg, #d63384, #f783ac);
@@ -17,10 +17,7 @@
       margin-bottom: 20px;
     }
 
-    .logo-container {
-      margin-bottom: 10px;
-    }
-
+    .logo-container { margin-bottom: 10px; }
     .logo-img {
       max-width: 130px;
       max-height: 130px;
@@ -34,197 +31,100 @@
     header h1 { font-size: 1.6rem; font-weight: 600; letter-spacing: 1px; }
     header p { font-size: 0.9rem; opacity: 0.95; margin-top: 4px; }
 
-    /* BANNER DE FORMAS DE PAGAMENTO NO TOPO */
-    .pagamento-banner {
-      max-width: 1000px;
-      margin: 0 auto 20px auto;
-      padding: 0 15px;
-      text-align: center;
-    }
+    /* BANNER PAGAMENTO */
+    .pagamento-banner { max-width: 1000px; margin: 0 auto 20px auto; padding: 0 15px; text-align: center; }
+    .pagamento-card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(214, 51, 132, 0.08); border: 1px solid #f7e6eb; display: inline-block; width: 100%; }
+    .pagamento-card h4 { color: #d63384; font-size: 0.95rem; margin-bottom: 10px; }
+    .pagamento-img-wrapper { position: relative; display: inline-block; cursor: pointer; max-width: 100%; }
+    .pagamento-img { max-width: 100%; max-height: 140px; object-fit: contain; border-radius: 8px; transition: transform 0.2s; }
+    .pagamento-img-wrapper:hover .pagamento-img { transform: scale(1.02); }
+    .tag-zoom-banner { position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.6); color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; pointer-events: none; }
 
-    .pagamento-card {
-      background: white;
-      border-radius: 12px;
-      padding: 15px;
-      box-shadow: 0 2px 8px rgba(214, 51, 132, 0.08);
-      border: 1px solid #f7e6eb;
-      display: inline-block;
-      width: 100%;
-    }
-
-    .pagamento-card h4 {
-      color: #d63384;
-      font-size: 0.95rem;
-      margin-bottom: 10px;
-    }
-
-    .pagamento-img-wrapper {
-      position: relative;
-      display: inline-block;
-      cursor: pointer;
-      max-width: 100%;
-    }
-
-    .pagamento-img {
-      max-width: 100%;
-      max-height: 140px;
-      object-fit: contain;
-      border-radius: 8px;
-      transition: transform 0.2s ease;
-    }
-
-    .pagamento-img-wrapper:hover .pagamento-img {
-      transform: scale(1.02);
-    }
-
-    .tag-zoom-banner {
-      position: absolute;
-      bottom: 6px;
-      right: 6px;
-      background: rgba(0,0,0,0.6);
-      color: white;
-      font-size: 0.7rem;
-      padding: 2px 8px;
-      border-radius: 10px;
-      pointer-events: none;
-    }
-
-    /* FILTROS DE CATEGORIA */
-    .filtros {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      max-width: 1000px;
-      margin: 0 auto 25px auto;
-      padding: 0 15px;
-    }
-
-    .btn-filtro {
-      background: white;
-      border: 1px solid #f3d0db;
-      color: #d63384;
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .btn-filtro.ativo, .btn-filtro:hover {
-      background: #d63384;
-      color: white;
-      border-color: #d63384;
-    }
+    /* FILTROS */
+    .filtros { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; max-width: 1000px; margin: 0 auto 25px auto; padding: 0 15px; }
+    .btn-filtro { background: white; border: 1px solid #f3d0db; color: #d63384; padding: 8px 18px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+    .btn-filtro.ativo, .btn-filtro:hover { background: #d63384; color: white; border-color: #d63384; }
 
     /* GRID DE PRODUTOS */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 20px;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 0 15px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 15px;
-      box-shadow: 0 4px 12px rgba(214, 51, 132, 0.08);
-      display: flex;
-      flex-direction: column;
-      border: 1px solid #f7e6eb;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 18px rgba(214, 51, 132, 0.15);
-    }
-
-    .img-container {
-      width: 100%;
-      height: 200px;
-      border-radius: 8px;
-      overflow: hidden;
-      position: relative;
-      cursor: pointer;
-      background-color: #fcf8f9;
-    }
-
-    .card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; padding: 0 15px; }
+    .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 12px rgba(214, 51, 132, 0.08); display: flex; flex-direction: column; border: 1px solid #f7e6eb; transition: transform 0.2s, box-shadow 0.2s; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 6px 18px rgba(214, 51, 132, 0.15); }
+    
+    .img-container { width: 100%; height: 200px; border-radius: 8px; overflow: hidden; position: relative; cursor: pointer; background-color: #fcf8f9; }
+    .card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
     .card img:hover { transform: scale(1.05); }
-
-    .tag-zoom {
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
-      background: rgba(0,0,0,0.5);
-      color: white;
-      font-size: 0.75rem;
-      padding: 3px 8px;
-      border-radius: 10px;
-      pointer-events: none;
-    }
+    .tag-zoom { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.5); color: white; font-size: 0.75rem; padding: 3px 8px; border-radius: 10px; pointer-events: none; }
 
     .card h3 { font-size: 1.05rem; margin: 12px 0 6px; color: #2c2c2c; }
     .card p { font-size: 0.85rem; color: #666; flex-grow: 1; margin-bottom: 12px; line-height: 1.3; }
     .card .preco { font-size: 1.2rem; font-weight: bold; color: #d63384; margin-bottom: 12px; }
 
-    .btn-wa {
-      background: #25D366;
-      color: white;
-      text-decoration: none;
-      text-align: center;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 0.9rem;
-      transition: background 0.2s;
+    .btn-add-carrinho { background: #d63384; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-add-carrinho:hover { background: #b8216b; }
+
+    /* BARRA FLUTUANTE DO CARRINHO (RODAPÉ) */
+    .carrinho-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.12);
+      padding: 12px 20px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 6px;
+      justify-content: space-between;
+      z-index: 999;
+      border-top: 2px solid #f7d0dc;
     }
 
-    .btn-wa:hover { background: #1ebc57; }
+    .carrinho-info { display: flex; align-items: center; gap: 12px; }
+    .carrinho-icone { background: #fce8ef; color: #d63384; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; position: relative; }
+    .carrinho-qtd-badge { position: absolute; top: -4px; right: -4px; background: #d63384; color: white; font-size: 0.75rem; font-weight: bold; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
-    /* MODAL DE ZOOM DA FOTO */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-color: rgba(0, 0, 0, 0.85);
-      justify-content: center;
-      align-items: center;
+    .carrinho-texto { display: flex; flex-direction: column; }
+    .carrinho-texto span { font-size: 0.8rem; color: #666; }
+    .carrinho-texto strong { font-size: 1.1rem; color: #222; }
+
+    .btn-ver-carrinho { background: #25D366; color: white; border: none; padding: 10px 20px; border-radius: 25px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; }
+    .btn-ver-carrinho:hover { background: #1ebc57; }
+
+    /* MODAL DO CARRINHO */
+    .modal-carrinho-content {
+      background: white;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 16px;
       padding: 20px;
-    }
-
-    .modal-content {
-      max-width: 90%;
       max-height: 85vh;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(255,255,255,0.2);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
-    .fechar-modal {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      color: white;
-      font-size: 35px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+    .carrinho-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 15px; }
+    .carrinho-header h2 { color: #d63384; font-size: 1.2rem; }
+
+    .carrinho-itens-lista { overflow-y: auto; flex-grow: 1; margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px; padding-right: 5px; }
+    
+    .carrinho-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f7e6eb; padding-bottom: 10px; gap: 10px; }
+    .carrinho-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; }
+    .carrinho-item-info { flex-grow: 1; }
+    .carrinho-item-info h4 { font-size: 0.9rem; color: #333; margin-bottom: 2px; }
+    .carrinho-item-info p { font-size: 0.85rem; color: #d63384; font-weight: bold; }
+
+    .qtd-controle { display: flex; align-items: center; gap: 8px; background: #fdf2f5; padding: 4px 8px; border-radius: 6px; border: 1px solid #f3d0db; }
+    .qtd-btn { background: #d63384; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .qtd-btn:hover { background: #b8216b; }
+
+    .carrinho-total-box { border-top: 1px solid #eee; padding-top: 15px; margin-top: auto; }
+    .carrinho-total-row { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: #222; }
+
+    .btn-enviar-wa { background: #25D366; color: white; border: none; width: 100%; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-enviar-wa:hover { background: #1ebc57; }
+
+    /* MODAL DE ZOOM */
+    .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); justify-content: center; align-items: center; padding: 20px; }
+    .modal-content { max-width: 90%; max-height: 85vh; border-radius: 10px; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+    .fechar-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 35px; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -234,10 +134,10 @@
       <img id="logoImg" src="" alt="Make Mel Logo" class="logo-img">
     </div>
     <h1>Catálogo Oficial</h1>
-    <p>Escolha seus produtos e peça direto no WhatsApp</p>
+    <p>Escolha seus produtos e faça seu pedido direto no WhatsApp</p>
   </header>
 
-  <!-- BANNER DE FORMAS DE PAGAMENTO CLICÁVEL -->
+  <!-- BANNER DE FORMAS DE PAGAMENTO -->
   <div id="pagamentoSection" class="pagamento-banner" style="display: none;">
     <div class="pagamento-card">
       <h4>💳 Formas de Pagamento Aceitas</h4>
@@ -248,7 +148,7 @@
     </div>
   </div>
 
-  <!-- BOTÕES DE FILTRO -->
+  <!-- FILTROS -->
   <div class="filtros">
     <button class="btn-filtro ativo" onclick="filtrar('Todos')">Todos</button>
     <button class="btn-filtro" onclick="filtrar('Maquiagem')">Maquiagem</button>
@@ -259,7 +159,46 @@
   <!-- LISTA DE PRODUTOS -->
   <div id="catalogo" class="grid">Carregando produtos...</div>
 
-  <!-- MODAL DE ZOOM -->
+  <!-- BARRA FLUTUANTE DO CARRINHO NO RODAPÉ -->
+  <div id="carrinhoBar" class="carrinho-bar" style="display: none;">
+    <div class="carrinho-info">
+      <div class="carrinho-icone">
+        🛒
+        <div id="carrinhoQtd" class="carrinho-qtd-badge">0</div>
+      </div>
+      <div class="carrinho-texto">
+        <span>Total do Pedido</span>
+        <strong id="carrinhoTotal">R$ 0,00</strong>
+      </div>
+    </div>
+    <button class="btn-ver-carrinho" onclick="abrirModalCarrinho()">Ver Sacola ➔</button>
+  </div>
+
+  <!-- MODAL DO CARRINHO DE COMPRAS -->
+  <div id="modalCarrinho" class="modal">
+    <div class="modal-carrinho-content">
+      <div class="carrinho-header">
+        <h2>🛍️ Sua Sacola de Compras</h2>
+        <span class="fechar-modal" style="color: #333; position: static;" onclick="fecharModalCarrinho()">&times;</span>
+      </div>
+
+      <div id="carrinhoLista" class="carrinho-itens-lista">
+        <!-- Itens inseridos via JS -->
+      </div>
+
+      <div class="carrinho-total-box">
+        <div class="carrinho-total-row">
+          <span>Valor Total:</span>
+          <span id="modalTotalValor" style="color: #d63384;">R$ 0,00</span>
+        </div>
+        <button class="btn-enviar-wa" onclick="enviarPedidoWhatsApp()">
+          📱 Enviar Pedido no WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE ZOOM DA FOTO -->
   <div id="modalZoom" class="modal" onclick="fecharZoom()">
     <span class="fechar-modal">&times;</span>
     <img id="imgExpandida" class="modal-content">
@@ -269,7 +208,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Insira as URLs copiadas do Cloudinary
+    // URLs da Logo e Formas de Pagamento salvas do Cloudinary
     const URL_LOGO = "https://res.cloudinary.com/ddfqhj1b7/image/upload/v1788024805/logo_lfk3l4.jpg";       
     const URL_PAGAMENTO = "https://res.cloudinary.com/ddfqhj1b7/image/upload/v1788024814/pagamento_pj92ww.jpg";  
 
@@ -282,16 +221,19 @@
       appId: "1:634155499123:web:1c7eb77a88840e40033406"
     };
 
-    const SEU_WHATSAPP = "5581993940513";
+    const SEU_WHATSAPP = "5581991421159";
+
+    // Gerenciador do Carrinho
+    let carrinho = [];
 
     // Exibe a Logo
-    if (URL_LOGO && !URL_LOGO.includes("COLE_AQUI")) {
+    if (URL_LOGO) {
       document.getElementById('logoImg').src = URL_LOGO;
       document.getElementById('logoContainer').style.display = 'block';
     }
 
-    // Exibe o Banner de Pagamento com evento de Clique para Zoom
-    if (URL_PAGAMENTO && !URL_PAGAMENTO.includes("COLE_AQUI")) {
+    // Exibe o Banner de Pagamento
+    if (URL_PAGAMENTO) {
       document.getElementById('pagamentoImg').src = URL_PAGAMENTO;
       document.getElementById('pagamentoSection').style.display = 'block';
       document.getElementById('pagamentoWrapper').onclick = () => abrirZoom(URL_PAGAMENTO);
@@ -310,7 +252,9 @@
         todosProdutos = [];
 
         querySnapshot.forEach((doc) => {
-          todosProdutos.push(doc.data());
+          const item = doc.data();
+          item.id = doc.id;
+          todosProdutos.push(item);
         });
 
         renderizarProdutos(todosProdutos);
@@ -332,9 +276,6 @@
       lista.forEach((item) => {
         const precoValor = Number(item.preco) || 0;
         const precoFormatado = precoValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        
-        const textoWa = encodeURIComponent(`Olá! Gostaria de encomendar: *${item.nome}* (${precoFormatado})`);
-        const urlWa = `https://wa.me/${SEU_WHATSAPP}?text=${textoWa}`;
 
         container.innerHTML += `
           <div class="card">
@@ -345,13 +286,125 @@
             <h3>${item.nome}</h3>
             <p>${item.descricao || ''}</p>
             <div class="preco">${precoFormatado}</div>
-            <a href="${urlWa}" target="_blank" rel="noopener noreferrer" class="btn-wa">
-              Pedir no WhatsApp
-            </a>
+            <button class="btn-add-carrinho" onclick="adicionarAoCarrinho('${item.id}')">
+              ➕ Adicionar à Sacola
+            </button>
           </div>
         `;
       });
     }
+
+    // FUNÇÕES DO CARRINHO
+    window.adicionarAoCarrinho = (id) => {
+      const produto = todosProdutos.find(p => p.id === id);
+      if (!produto) return;
+
+      const itemExistente = carrinho.find(item => item.id === id);
+      if (itemExistente) {
+        itemExistente.qtd += 1;
+      } else {
+        carrinho.push({ ...produto, qtd: 1 });
+      }
+
+      atualizarCarrinhoUI();
+    };
+
+    window.alterarQtd = (id, delta) => {
+      const item = carrinho.find(i => i.id === id);
+      if (!item) return;
+
+      item.qtd += delta;
+
+      if (item.qtd <= 0) {
+        carrinho = carrinho.filter(i => i.id !== id);
+      }
+
+      atualizarCarrinhoUI();
+      renderizarModalCarrinho();
+    };
+
+    function atualizarCarrinhoUI() {
+      const totalQtd = carrinho.reduce((sum, item) => sum + item.qtd, 0);
+      const valorTotal = carrinho.reduce((sum, item) => sum + (Number(item.preco) * item.qtd), 0);
+
+      document.getElementById('carrinhoQtd').innerText = totalQtd;
+      document.getElementById('carrinhoTotal').innerText = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      document.getElementById('modalTotalValor').innerText = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+      const bar = document.getElementById('carrinhoBar');
+      if (totalQtd > 0) {
+        bar.style.display = 'flex';
+      } else {
+        bar.style.display = 'none';
+        fecharModalCarrinho();
+      }
+    }
+
+    function renderizarModalCarrinho() {
+      const listaContainer = document.getElementById('carrinhoLista');
+      listaContainer.innerHTML = "";
+
+      if (carrinho.length === 0) {
+        listaContainer.innerHTML = "<p style='text-align: center; color: #888; margin: 20px 0;'>Sua sacola está vazia.</p>";
+        return;
+      }
+
+      carrinho.forEach(item => {
+        const subtotal = Number(item.preco) * item.qtd;
+        const subtotalFormatado = subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        listaContainer.innerHTML += `
+          <div class="carrinho-item">
+            <img src="${item.imagem}">
+            <div class="carrinho-item-info">
+              <h4>${item.nome}</h4>
+              <p>${subtotalFormatado}</p>
+            </div>
+            <div class="qtd-controle">
+              <button class="qtd-btn" onclick="alterarQtd('${item.id}', -1)">-</button>
+              <strong style="font-size: 0.9rem;">${item.qtd}</strong>
+              <button class="qtd-btn" onclick="alterarQtd('${item.id}', 1)">+</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    window.abrirModalCarrinho = () => {
+      renderizarModalCarrinho();
+      document.getElementById('modalCarrinho').style.display = 'flex';
+    };
+
+    window.fecharModalCarrinho = () => {
+      document.getElementById('modalCarrinho').style.display = 'none';
+    };
+
+    // ENVIO FORMATADO PARA O WHATSAPP
+    window.enviarPedidoWhatsApp = () => {
+      if (carrinho.length === 0) return;
+
+      let mensagem = "✨ *NOVO PEDIDO - MAKE MEL* ✨\n\n";
+      mensagem += "Olá! Gostaria de encomendar os seguintes itens:\n\n";
+
+      let totalGeral = 0;
+
+      carrinho.forEach((item, index) => {
+        const subtotal = Number(item.preco) * item.qtd;
+        totalGeral += subtotal;
+        const subtotalFormatado = subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        
+        mensagem += `${index + 1}. *${item.nome}*\n`;
+        mensagem += `   • Quantidade: ${item.qtd}x\n`;
+        mensagem += `   • Subtotal: ${subtotalFormatado}\n\n`;
+      });
+
+      const totalGeralFormatado = totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      mensagem += `💰 *VALOR TOTAL: ${totalGeralFormatado}*\n\n`;
+      mensagem += "Por favor, informe a taxa de entrega e as opções de pagamento disponíveis. Obrigado!";
+
+      const urlWa = `https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(mensagem)}`;
+      window.open(urlWa, '_blank');
+    };
 
     window.filtrar = (cat) => {
       const botoes = document.querySelectorAll('.btn-filtro');
