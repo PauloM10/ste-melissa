@@ -8,7 +8,7 @@
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { max-width: 800px; margin: 0 auto; padding: 20px; background: #fdf8f9; color: #4a4a4a; }
     .card { background: #fff; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(230, 150, 170, 0.15); border: 1px solid #f3e5e8; }
-    h1, h2 { color: #d63384; }
+    h1, h2 { color: #d63384; margin-bottom: 15px; }
     input, textarea, select, button { width: 100%; padding: 12px; margin-top: 6px; margin-bottom: 14px; border: 1px solid #ebd4da; border-radius: 8px; outline: none; }
     button { background: #d63384; color: white; font-weight: bold; border: none; cursor: pointer; transition: background 0.3s; }
     button:hover { background: #b8216b; }
@@ -28,12 +28,25 @@
     .tag-status { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; margin-left: 6px; }
     .tag-ativo { background: #d4edda; color: #155724; }
     .tag-esgotado { background: #f8d7da; color: #721c24; }
+    .cat-tag { background: #fce8ef; color: #d63384; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+    .cat-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   </style>
 </head>
 <body>
 
   <h1>Painel de Controle</h1>
 
+  <!-- GERENCIAR CATEGORIAS / FILTROS -->
+  <div class="card">
+    <h2>Filtros & Categorias</h2>
+    <form id="catForm" style="display: flex; gap: 10px;">
+      <input type="text" id="novaCategoria" placeholder="Nome do novo filtro (Ex: Perfumes)" required style="margin: 0;">
+      <button type="submit" style="width: auto; margin: 0; white-space: nowrap;">Adicionar Filtro</button>
+    </form>
+    <div id="listaCategorias" class="cat-list">Carregando filtros...</div>
+  </div>
+
+  <!-- CADASTRAR PRODUTO -->
   <div class="card">
     <h2 id="formTitulo">Cadastrar Novo Produto</h2>
     <form id="prodForm">
@@ -45,10 +58,7 @@
 
       <label>Categoria:</label>
       <select id="categoria" required>
-        <option value="Maquiagem">Maquiagem</option>
-        <option value="Skincare">Skincare</option>
-        <option value="Pincéis">Pincéis & Acessórios</option>
-        <option value="Outros">Outros</option>
+        <option value="">Carregando categorias...</option>
       </select>
 
       <label>Disponibilidade em Estoque:</label>
@@ -99,6 +109,72 @@
     const db = getFirestore(app);
 
     let produtosCache = {};
+    let categoriasCache = [];
+
+    // CARREGAR CATEGORIAS
+    async function carregarCategorias() {
+      const container = document.getElementById('listaCategorias');
+      const selectCat = document.getElementById('categoria');
+
+      try {
+        const querySnapshot = await getDocs(collection(db, "categorias"));
+        categoriasCache = [];
+        container.innerHTML = "";
+        selectCat.innerHTML = "";
+
+        if (querySnapshot.empty) {
+          container.innerHTML = "<p style='font-size: 0.85rem; color: #888;'>Nenhum filtro personalizado cadastrado.</p>";
+          selectCat.innerHTML = `<option value="Outros">Outros</option>`;
+          return;
+        }
+
+        querySnapshot.forEach((documento) => {
+          const cat = documento.data();
+          const catId = documento.id;
+          categoriasCache.push({ id: catId, nome: cat.nome });
+
+          container.innerHTML += `
+            <span class="cat-tag">
+              ${cat.nome}
+              <span style="cursor:pointer; font-weight:bold; color:#dc3545;" onclick="deletarCategoria('${catId}')">&times;</span>
+            </span>
+          `;
+
+          selectCat.innerHTML += `<option value="${cat.nome}">${cat.nome}</option>`;
+        });
+      } catch (err) {
+        console.error("Erro ao carregar categorias:", err);
+      }
+    }
+
+    // ADICIONAR CATEGORIA
+    document.getElementById('catForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('novaCategoria');
+      const nomeCat = input.value.trim();
+
+      if (!nomeCat) return;
+
+      try {
+        await addDoc(collection(db, "categorias"), { nome: nomeCat });
+        input.value = "";
+        carregarCategorias();
+      } catch (err) {
+        alert("Erro ao adicionar filtro: " + err.message);
+      }
+    });
+
+    // EXCLUIR CATEGORIA
+    window.deletarCategoria = async (id) => {
+      if (confirm("Deseja apagar este filtro?")) {
+        try {
+          await deleteDoc(doc(db, "categorias", id));
+          carregarCategorias();
+        } catch (err) {
+          alert("Erro ao excluir filtro: " + err.message);
+        }
+      }
+    };
 
     async function uploadFoto(file) {
       const formData = new FormData();
@@ -221,7 +297,7 @@
       document.getElementById('prodId').value = id;
       document.getElementById('imagemAtual').value = item.imagem;
       document.getElementById('nome').value = item.nome;
-      document.getElementById('categoria').value = item.categoria || 'Maquiagem';
+      document.getElementById('categoria').value = item.categoria;
       document.getElementById('ativo').value = (item.ativo !== false).toString();
       document.getElementById('preco').value = item.preco;
       document.getElementById('descricao').value = item.descricao || '';
@@ -261,6 +337,7 @@
       }
     };
 
+    carregarCategorias();
     carregarAdmin();
   </script>
 </body>
